@@ -1,23 +1,28 @@
-use clap::Parser;
+use colored::Colorize;
 use std::{env, fs, io};
 
-#[derive(Debug, Parser)]
-struct Args {
-    #[arg(short, long)]
-    all: char,
-}
-
 fn main() -> io::Result<()> {
-    if let Ok(x) = env::current_dir() {
-        let args = Args::parse();
-        let dir = fs::read_dir(x)?;
+    let option = env::args().skip(1).nth(0);
+    let files = fs::read_dir(env::current_dir()?)?
+        .filter_map(|x| x.ok())
+        .map(|x| x.file_name().into_string().ok())
+        .filter_map(|x| x)
+        .collect::<Vec<String>>();
 
-        for file in dir {
-            if let Ok(x) = file {
-                // " = 34 in ascii
-
-                print!("{:?} ", x.file_name());
+    match option.is_some() {
+        true => {
+            if option.is_some_and(|x| x.eq("-a")) {
+                files.into_iter().for_each(|file_name| {
+                    if !file_name.starts_with('.') {
+                        println!("{file_name}");
+                    };
+                })
             }
+        }
+        false => {
+            files.into_iter().for_each(|file_name| {
+                println!("{file_name}");
+            });
         }
     }
 
