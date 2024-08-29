@@ -1,30 +1,41 @@
 use colored::Colorize;
 use std::{env, fs, io};
 
+#[inline(always)]
 fn main() -> io::Result<()> {
     let option = env::args().skip(1).nth(0);
-    let files = fs::read_dir(env::current_dir()?)?
-        .filter_map(|x| x.ok())
-        .map(|x| x.file_name().into_string().ok())
-        .filter_map(|x| x)
-        .collect::<Vec<String>>();
 
-    match option.is_some() {
-        true => {
-            if option.is_some_and(|x| x.eq("-a")) {
-                files.into_iter().for_each(|file_name| {
-                    if !file_name.starts_with('.') {
-                        println!("{file_name}");
-                    };
-                })
+    fs::read_dir(env::current_dir()?)?
+        .filter_map(|x| x.ok())
+        .for_each(|file| {
+            if let Ok(file_type) = file.file_type() {
+                if let Ok(name) = file.file_name().into_string() {
+                    if file_type.is_file() {
+                        if option.as_ref().is_some_and(|x| x.eq("-a") || x.eq("--a")) {
+                            print!("{} ", name.bright_blue());
+                        } else if !name.starts_with('.') {
+                            print!("{} ", name.bright_blue());
+                        }
+                    }
+                    if file_type.is_dir() {
+                        if option.as_ref().is_some_and(|x| x.eq("-a") || x.eq("--a")) {
+                            print!("{} ", name.green());
+                        } else if !name.starts_with('.') {
+                            print!("{} ", name.green());
+                        }
+                    }
+                    if file_type.is_symlink() {
+                        if option.as_ref().is_some_and(|x| x.eq("-a") || x.eq("--a")) {
+                            print!("{} ", name.red());
+                        } else if !name.starts_with('.') {
+                            print!("{} ", name.red());
+                        }
+                    }
+                }
             }
-        }
-        false => {
-            files.into_iter().for_each(|file_name| {
-                println!("{file_name}");
-            });
-        }
-    }
+        });
+
+    println!();
 
     Ok(())
 }
