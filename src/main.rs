@@ -10,25 +10,27 @@ fn main() -> io::Result<()> {
         .for_each(|file| {
             if let Ok(file_type) = file.file_type() {
                 if let Ok(name) = file.file_name().into_string() {
-                    if file_type.is_file() {
-                        if option.as_ref().is_some_and(|x| x.eq("-a") || x.eq("--a")) {
-                            print!("{} ", name.bright_blue());
-                        } else if !name.starts_with('.') {
+                    if option.as_ref().is_some_and(|x| x.eq("-a") || x.eq("--a")) {
+                        if file_type.is_file() {
                             print!("{} ", name.bright_blue());
                         }
-                    }
-                    if file_type.is_dir() {
-                        if option.as_ref().is_some_and(|x| x.eq("-a") || x.eq("--a")) {
-                            print!("{} ", name.green());
-                        } else if !name.starts_with('.') {
+                        if file_type.is_dir() {
                             print!("{} ", name.green());
                         }
-                    }
-                    if file_type.is_symlink() {
-                        if option.as_ref().is_some_and(|x| x.eq("-a") || x.eq("--a")) {
+                        if file_type.is_symlink() {
                             print!("{} ", name.red());
-                        } else if !name.starts_with('.') {
-                            print!("{} ", name.red());
+                        }
+                    } else {
+                        if !name.starts_with('.') {
+                            if file_type.is_file() {
+                                print!("{} ", name.bright_blue());
+                            }
+                            if file_type.is_dir() {
+                                print!("{} ", name.green());
+                            }
+                            if file_type.is_symlink() {
+                                print!("{} ", name.red());
+                            }
                         }
                     }
                 }
